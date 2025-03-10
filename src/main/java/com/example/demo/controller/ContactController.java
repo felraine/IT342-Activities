@@ -26,6 +26,11 @@ public class ContactController {
         this.googleContactsService = googleContactsService;
     }
 
+    @GetMapping("/")
+    public String redirectToLogin() {
+        return "redirect:/login";
+    }
+
     @GetMapping("/contacts")
     public String getContacts(Model model, @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
         List<Contact> contacts = googleContactsService.getContacts(client);
@@ -34,18 +39,15 @@ public class ContactController {
     }
 
     @PatchMapping("/editContact")
-    public ResponseEntity<String> editContact(@RequestBody EditContactRequest request, @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
-        try {
-            String result = googleContactsService.editContact(client, request.getContactId(), request.getNewName(), request.getNewNumber());
-            if (result.startsWith("✅")) {
-                return ResponseEntity.ok("{\"success\": true}");
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"success\": false, \"message\": \"" + result + "\"}");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("{\"success\": false, \"message\": \"Error updating contact: " + e.getMessage() + "\"}");
+    public String editContact(@RequestBody EditContactRequest request, @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
+        String result = googleContactsService.editContact(client, request.getContactId(), request.getNewName(), request.getNewNumber());
+        if (result.startsWith("✅")) {
+            return "redirect:/contacts";
+        } else {
+            return "redirect:/contacts";
         }
     }
+
 
     @PostMapping("/deleteContact")
     public String deleteContact(String contactId, @RegisteredOAuth2AuthorizedClient("google") OAuth2AuthorizedClient client) {
